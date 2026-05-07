@@ -224,6 +224,7 @@ section h2{
 }
 @keyframes cardIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 .project-card:hover{border-color:rgba(255,255,255,0.1);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.4);}
+.project-card.clickable{cursor:pointer}
 
 .card-banner{
   height:90px;background:var(--surface2);
@@ -666,10 +667,13 @@ function handleSubmit(btn){
       grid.innerHTML = projects.map((n,i)=>{
         const repo = n.repo ? n.repo : '';
         const live = n.live ? n.live : '';
-        const repoBtn = repo ? `<a class="card-btn btn-github" href="${repo}" target="_blank">GitHub</a>` : `<a class="card-btn btn-github" href="#" style="opacity:.45;pointer-events:none">GitHub</a>`;
-        const liveBtn = live ? `<a class="card-btn btn-live" href="${live}" target="_blank">↗ Live</a>` : `<a class="card-btn btn-live" href="#" style="opacity:.45;pointer-events:none">↗ Live</a>`;
+        const repoBtn = repo ? `<a class="card-btn btn-github" href="${repo}" target="_blank" onclick="event.stopPropagation()">GitHub</a>` : `<a class="card-btn btn-github" href="#" style="opacity:.45;pointer-events:none" onclick="event.stopPropagation()">GitHub</a>`;
+        const liveBtn = live ? `<a class="card-btn btn-live" href="${live}" target="_blank" onclick="event.stopPropagation()">↗ Live</a>` : `<a class="card-btn btn-live" href="#" style="opacity:.45;pointer-events:none" onclick="event.stopPropagation()">↗ Live</a>`;
+        const cardClass = `project-card${live ? ' clickable' : ''}`;
+        const dataLive = live ? ` data-live=${JSON.stringify(live)}` : '';
+        const onClickAttr = live ? ` onclick="window.open(this.dataset.live, '_blank')"` : '';
         return `
-          <div class="project-card" data-cat="${(n.tags||[]).includes('frontend')?'frontend':'fullstack'}" style="animation-delay:${i*0.05}s">
+          <div class="${cardClass}"${dataLive}${onClickAttr} data-cat="${(n.tags||[]).includes('frontend')?'frontend':'fullstack'}" style="animation-delay:${i*0.05}s">
             <div class="card-banner"><span class="card-banner-emoji">📁</span></div>
             <div class="card-body">
               <div class="card-meta"><span class="card-num">${String(i+1).padStart(2,'0')}</span><span class="card-stars"><span>★</span></span></div>

@@ -12,12 +12,12 @@ const DEFAULT_NEWS = [
 ];
 
 const DEFAULT_PROFILE = {
-  name: 'Deegiina',
+  name: 'хархул',
   title: 'Front-end хөгжүүлэгч',
-  bio: 'Хэрэглэгчдэд таалагдах гоё, хурдан, ажиллагаатай вэб бүтээдэг.',
-  email: 'deegii@example.com',
-  github: 'https://github.com',
-  badge: 'Миний портфолио — 2025',
+  bio: 'Би веб хөгжүүлэлт болон UI/UX дизайн сонирхдог. Орчин үеийн, хэрэглэгчдэд ээлтэй веб сайт бүтээх дуртай..',
+  email: 'hulaajaa@gmail.com',
+  github: 'https://github.com/haru1006',
+  badge: 'Миний портфолио — 2026',
 };
 
 const Store = {
