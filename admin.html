@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard </title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root{
+    --accent:#e2c97e;
+    --accent2:#c8b06a;
+    --bg:#0d0d0f;
+    --bg2:#111114;
+    --surface:#161619;
+    --surface2:#1c1c20;
+    --text:#f0eeea;
+    --muted:#5a5a65;
+    --muted2:#3a3a42;
+    --border:rgba(255,255,255,0.06);
+    --font:'Segoe UI',system-ui,sans-serif;
+    --mono:'Courier New',monospace;
+  }
+  .admin-layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 230px; background: var(--surface); border-right: 1px solid var(--border-glow);
+    display: flex; flex-direction: column; padding: 24px 0;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    box-shadow: 4px 0 30px rgba(0,0,0,.3);
+  }
+  .sidebar::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .sidebar-logo {
+    font-family: var(--display); font-size: 18px; font-weight: 700;
+    color: transparent;
+    background: linear-gradient(135deg, var(--accent-soft), var(--accent2));
+    -webkit-background-clip: text; background-clip: text;
+    padding: 0 22px 22px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sidebar-logo-dot {
+    width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
+    animation: pulseDot 1.8s infinite; flex-shrink: 0;
+  }
+  @keyframes pulseDot {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,90,180,.6); }
+    50% { box-shadow: 0 0 0 6px rgba(255,90,180,0); }
+  }
+
+  .sidebar-menu { flex: 1; padding: 4px 12px; }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; font-size: 14px; color: var(--muted);
+    cursor: pointer; transition: all .2s;
+    border-radius: 10px; border: none;
+    background: none; width: 100%; text-align: left;
+    font-family: var(--font); margin-bottom: 4px;
+    position: relative;
+  }
+  .sidebar-item:hover { color: var(--text); background: rgba(255,90,180,0.07); }
+  .sidebar-item.active {
+    color: var(--accent); background: rgba(255,90,180,0.12);
+    border: 1px solid rgba(255,90,180,0.2);
+  }
+  .sidebar-icon { font-size: 16px; width: 22px; text-align: center; }
+
+  .sidebar-divider { height: 1px; background: var(--border); margin: 10px 12px; }
+  .sidebar-footer { padding: 16px 22px; border-top: 1px solid var(--border); }
+
+  /* Admin user info in sidebar footer */
+  .sidebar-user {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+    padding: 10px 14px; background: rgba(255,90,180,0.06);
+    border-radius: 10px; border: 1px solid rgba(255,90,180,0.12);
+  }
+  .sidebar-avatar {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #fff;
+    font-family: var(--display);
+  }
+  .sidebar-user-info { flex: 1; min-width: 0; }
+  .sidebar-user-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-user-role { font-size: 11px; font-family: var(--mono); color: var(--muted); }
+
+  .logout-btn {
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; color: var(--muted); transition: all .2s;
+    background: none; border: none; font-family: var(--font);
+    font-size: 13px; padding: 10px 14px; width: 100%;
+    border-radius: 8px;
+  }
+  .logout-btn:hover { color: var(--danger); background: rgba(255,68,102,0.08); }
+
+  /* ── MAIN ── */
+  .admin-main { margin-left: 230px; flex: 1; padding: 36px; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .topbar-title { font-family: var(--display); font-size: 26px; font-weight: 700; }
+  .topbar-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .topbar-tag {
+    font-family: var(--mono); font-size: 11px; padding: 6px 14px;
+    background: rgba(255,90,180,0.1); border: 1px solid rgba(255,90,180,0.25);
+    border-radius: 20px; color: var(--accent-soft);
+  }
+
+  /* ── SECTION VISIBILITY ── */
+  .admin-section { display: none; animation: fadeIn .3s ease; }
+  .admin-section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── STATS GRID ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border-glow);
+    border-radius: 14px; padding: 24px 26px; transition: all .25s;
+    position: relative; overflow: hidden; cursor: pointer;
+  }
+  .stat-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: scaleX(0); transition: transform .3s; transform-origin: left;
+  }
+  .stat-card:hover { border-color: rgba(255,90,180,0.35); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,90,180,0.12); }
+  .stat-card:hover::after { transform: scaleX(1); }
+  .stat-icon { font-size: 26px; margin-bottom: 12px; }
+  .stat-label { font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .stat-value { font-size: 40px; font-weight: 700; font-family: var(--display); background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  /* ── SECTION HEADER ── */
+  .section-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+  .section-header h1 { font-size: 22px; font-weight: 700; font-family: var(--display); }
+  .section-header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ── MESSAGE CARD ── */
+  .msg-card {
+    background: var(--surface); border: 1px solid var(--border-glow);
+    border-radius: 12px; padding: 22px 26px; margin-bottom: 12px;
+    transition: all .2s; position: relative;
+  }
+  .msg-card.unread { border-color: rgba(255,90,180,0.35); background: rgba(255,90,180,0.04); }
+  .msg-card:hover { border-color: rgba(255,90,180,0.4); }
+  .msg-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .msg-sender { font-weight: 700; font-size: 15px; }
+  .msg-email { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .msg-date { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .msg-body { font-size: 14px; color: var(--text); line-height: 1.65; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .msg-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .unread-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    flex-shrink: 0; animation: pulseDot 1.8s infinite;
+  }
+
+  /* ── PROFILE SECTION ── */
+  .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .profile-preview {
+    background: var(--surface); border: 1px solid var(--border-glow);
+    border-radius: 14px; padding: 30px; display: flex; flex-direction: column; align-items: center; text-align: center;
+    gap: 12px;
+  }
+  .profile-preview-avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-family: var(--display); color: #fff;
+    box-shadow: 0 0 30px rgba(255,90,180,0.4);
+  }
+  .profile-preview-name { font-family: var(--display); font-size: 22px; font-weight: 700; }
+  .profile-preview-title { font-family: var(--mono); font-size: 12px; color: var(--accent-soft); }
+  .profile-preview-bio { font-size: 14px; color: var(--muted); line-height: 1.65; }
+  .profile-preview-links { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+  .profile-link {
+    font-family: var(--mono); font-size: 12px; color: var(--accent-soft);
+    background: rgba(255,90,180,0.08); border: 1px solid rgba(255,90,180,0.2);
+    padding: 5px 12px; border-radius: 6px; text-decoration: none; transition: all .2s;
+  }
+  .profile-link:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── MODAL OVERRIDES ── */
+  .modal-overlay { display: none; }
+  .modal-overlay.open { display: flex; }
+</style>
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-dot"></div>
+      Admin
+    </div>
+    <nav class="sidebar-menu">
+      <button class="sidebar-item active" id="nav-dashboard" onclick="showSection('dashboard')">
+        <span class="sidebar-icon">📊</span> Дашбоард
+      </button>
+      <button class="sidebar-item" id="nav-menu" onclick="showSection('menu')">
+        <span class="sidebar-icon">☰</span> Цэс удирдах
+      </button>
+      <button class="sidebar-item" id="nav-news" onclick="showSection('news')">
+        <span class="sidebar-icon">📰</span> Мэдээ / Төсөл
+      </button>
+      <button class="sidebar-item" id="nav-messages" onclick="showSection('messages')">
+        <span class="sidebar-icon">✉️</span> Мессежүүд
+        <span id="msg-badge" style="margin-left:auto;display:none"></span>
+      </button>
+      <button class="sidebar-item" id="nav-profile" onclick="showSection('profile')">
+        <span class="sidebar-icon"></span> Профайл
+      </button>
+      <div class="sidebar-divider"></div>
+      <button class="sidebar-item" onclick="window.open('index.html','_blank')">
+        <span class="sidebar-icon"></span> Сайт харах
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebar-avatar">A</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebar-name">Admin</div>
+          <div class="sidebar-user-role">administrator</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">⏻ Гарах</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <!-- DASHBOARD -->
+    <section class="admin-section active" id="section-dashboard">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Дашбоард</div>
+          <div class="topbar-sub">Системийн ерөнхий мэдээлэл</div>
+        </div>
+        <div class="topbar-tag" id="dash-greeting"> Сайн уу, Admin!</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card" onclick="showSection('menu')">
+          <div class="stat-icon">☰</div>
+          <div class="stat-label">Нийт цэс</div>
+          <div class="stat-value" id="stat-menu">0</div>
+        </div>
+        <div class="stat-card" onclick="showSection('news')">
+          <div class="stat-icon"></div>
+          <div class="stat-label">Нийт мэдээ</div>
+          <div class="stat-value" id="stat-news">0</div>
+        </div>
+        <div class="stat-card" onclick="showSection('news')">
+          <div class="stat-icon"></div>
+          <div class="stat-label">Нийт төсөл</div>
+          <div class="stat-value" id="stat-projects">0</div>
+        </div>
+        <div class="stat-card" onclick="showSection('messages')">
+          <div class="stat-icon"></div>
+          <div class="stat-label">Мессеж</div>
+          <div class="stat-value" id="stat-messages">0</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <span class="table-title">Сүүлийн мэдээнүүд</span>
+          <button class="btn btn-success btn-sm" onclick="showSection('news')">Бүгдийг харах →</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Гарчиг</th>
+              <th>Төрөл</th>
+              <th>Огноо</th>
+            </tr>
+          </thead>
+          <tbody id="dash-recent"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MENU MANAGEMENT -->
+    <section class="admin-section" id="section-menu">
+      <div class="section-header">
+        <div>
+          <h1>Цэс удирдах</h1>
+          <p>Навигацийн цэсийг нэмэх, засах, устгах</p>
+        </div>
+        <button class="btn btn-success btn-sm" onclick="openMenuModal()">+ Цэс нэмэх</button>
+      </div>
+      <div class="table-container">
+        <div class="table-header">
+          <span class="table-title">Цэснүүд</span>
+          <span id="menu-count" style="font-size:12px;font-family:var(--mono);color:var(--muted)"></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Нэр</th>
+              <th>Холбоос</th>
+              <th>Дараалал</th>
+              <th>Үйлдэл</th>
+            </tr>
+          </thead>
+          <tbody id="menu-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- NEWS / PROJECTS MANAGEMENT -->
+    <section class="admin-section" id="section-news">
+      <div class="section-header">
+        <div>
+          <h1>Мэдээ / Төсөл удирдах</h1>
+          <p>Мэдээ болон төслүүдийг нэмэх, засах, устгах — төсөл нүүр хуудсанд харагдана</p>
+        </div>
+        <button class="btn btn-success btn-sm" onclick="openNewsModal()">+ Нэмэх</button>
+      </div>
+      <div class="table-container">
+        <div class="table-header">
+          <span class="table-title">Нийтлэлүүд</span>
+          <span id="news-count" style="font-size:12px;font-family:var(--mono);color:var(--muted)"></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Гарчиг</th>
+              <th>Төрөл</th>
+              <th>Агуулга</th>
+              <th>Огноо</th>
+              <th>Үйлдэл</th>
+            </tr>
+          </thead>
+          <tbody id="news-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MESSAGES -->
+    <section class="admin-section" id="section-messages">
+      <div class="section-header">
+        <div>
+          <h1>Мессежүүд</h1>
+          <p>Холбоо барих хэсгээр ирсэн мессежүүд</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="markAllRead()">✓ Бүгдийг уншсан</button>
+      </div>
+      <div id="messages-list"></div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="admin-section" id="section-profile">
+      <div class="section-header">
+        <div>
+          <h1>Профайл удирдах</h1>
+          <p>Нүүр хуудасны мэдээллийг өөрчлөх</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveProfile()"> Хадгалах</button>
+      </div>
+      <div class="profile-grid">
+        <!-- Form -->
+        <div>
+          <div class="form-group"><label>Нэр</label><input type="text" id="prof-name" placeholder="Таны нэр" /></div>
+          <div class="form-group"><label>Гарчиг / Мэргэжил</label><input type="text" id="prof-title" placeholder="Front-end хөгжүүлэгч" /></div>
+          <div class="form-group"><label>Танилцуулга (bio)</label><textarea id="prof-bio" rows="3" placeholder="Өөрийгөө товч танилцуулна уу..."></textarea></div>
+          <div class="form-group"><label>И-мэйл</label><input type="email" id="prof-email" placeholder="example@mail.com" /></div>
+          <div class="form-group"><label>GitHub холбоос</label><input type="text" id="prof-github" placeholder="https://github.com/username" /></div>
+          <div class="form-group"><label>Badge текст</label><input type="text" id="prof-badge" placeholder="Миний портфолио — 2025" /></div>
+          <div class="form-group"><label>Профайл зураг</label><input type="file" id="prof-photo-input" accept="image/*" /></div>
+          <div class="form-group" style="margin-top:8px">
+            <button type="button" class="btn btn-outline btn-sm" onclick="setProfileFromLocal('jojo.jpg')">jojo.jpg-г ашиглах</button>
+          </div>
+        </div>
+        <!-- Preview -->
+        <div class="profile-preview" id="profile-preview">
+          <div class="profile-preview-avatar" id="prev-avatar">D</div>
+          <div class="profile-preview-name" id="prev-name">хархул</div>
+          <div class="profile-preview-title" id="prev-title">Front-end хөгжүүлэгч</div>
+          <div class="profile-preview-bio" id="prev-bio">Хэрэглэгчдэд таалагдах гоё вэб бүтээдэг.</div>
+          <div class="profile-preview-links">
+            <a class="profile-link" id="prev-email-link" href="#">✉ И-мэйл</a>
+            <a class="profile-link" id="prev-github-link" href="#" target="_blank">⌥ GitHub</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MENU MODAL -->
+<div class="modal-overlay" id="menu-modal">
+  <div class="modal">
+    <h2 id="menu-modal-title">Цэс нэмэх</h2>
+    <p class="subtitle">Навигацийн цэсэнд шинэ зүйл нэмэх</p>
+    <input type="hidden" id="menu-edit-id" />
+    <div class="form-group"><label>Цэсний нэр</label><input type="text" id="menu-name" placeholder="Жишээ: Бидний тухай" /></div>
+    <div class="form-group"><label>Холбоос (URL)</label><input type="text" id="menu-url" placeholder="#about эсвэл page.html" /></div>
+    <div class="form-group"><label>Дараалал</label><input type="number" id="menu-order" value="1" min="1" /></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeMenuModal()">Болих</button>
+      <button class="btn btn-primary" onclick="saveMenu()">Хадгалах</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEWS MODAL -->
+<div class="modal-overlay" id="news-modal">
+  <div class="modal">
+    <h2 id="news-modal-title">Мэдээ нэмэх</h2>
+    <p class="subtitle">Шинэ нийтлэл эсвэл төсөл нэмэх</p>
+    <input type="hidden" id="news-edit-id" />
+    <div class="form-group"><label>Гарчиг</label><input type="text" id="news-title" placeholder="Мэдээний гарчиг" /></div>
+    <div class="form-group">
+      <label>Төрөл</label>
+      <select id="news-type" onchange="toggleTagsField()">
+        <option value="news">📰 Мэдээ</option>
+        <option value="project">🚀 Төсөл (нүүр хуудсанд харагдана)</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Агуулга</label><textarea id="news-content" placeholder="Мэдээний агуулга..."></textarea></div>
+    <div class="form-group" id="tags-field">
+      <label>Тэгүүд (таслалаар тусгаарлана)</label>
+      <input type="text" id="news-tags" placeholder="JavaScript, HTML, CSS" />
+    </div>
+    <div class="form-group" id="repo-field" style="display:none">
+      <label>GitHub холболт</label>
+      <input type="text" id="news-repo" placeholder="https://github.com/haru1006" />
+    </div>
+    <div class="form-group" id="live-field" style="display:none">
+      <label>Live холболт</label>
+      <input type="text" id="news-live" placeholder="https://example.com" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeNewsModal()">Болих</button>
+      <button class="btn btn-primary" onclick="saveNews()">Хадгалах</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal" style="max-width:400px">
+    <h2>Устгах уу?</h2>
+    <p class="subtitle" id="delete-msg"></p>
+    <div style="padding:20px;background:rgba(255,68,102,0.07);border:1px solid rgba(255,68,102,0.2);border-radius:10px;margin:16px 0;font-size:13px;color:var(--muted);">
+      ⚠ Энэ үйлдлийг буцаах боломжгүй болно!
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeDeleteModal()">Болих</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Устгах</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="shared.js"></script>
+<script>
+  // Auth check
+  if (!Store.isLoggedIn()) window.location.href = 'login.html';
+
+  // Init sidebar user
+  (function() {
+    const p = Store.getProfile() || {};
+    document.getElementById('sidebar-name').textContent = p.name || '';
+    const sb = document.getElementById('sidebar-avatar');
+    if (p.photo) {
+      sb.innerHTML = `<img src="${p.photo}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+      sb.style.background = 'none';
+    } else {
+      sb.textContent = (p.name || 'A').charAt(0).toUpperCase();
+      sb.style.background = '';
+    }
+    document.getElementById('dash-greeting').textContent = '🌸 Сайн уу, ' + (p.name || 'Admin') + '!';
+  })();
+
+  function doLogout() {
+    Store.logout();
+    showToast('Амжилттай гарлаа');
+    setTimeout(() => { window.location.href = 'login.html'; }, 600);
+  }
+
+  function showSection(name) {
+    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    const navEl = document.getElementById('nav-' + name);
+    if (navEl) navEl.classList.add('active');
+    if (name === 'dashboard') renderDashboard();
+    if (name === 'menu') renderMenuTable();
+    if (name === 'news') renderNewsTable();
+    if (name === 'messages') renderMessages();
+    if (name === 'profile') loadProfileForm();
+  }
+
+  // ── DASHBOARD ──
+  function renderDashboard() {
+    const menus = Store.getMenus();
+    const news = Store.getNews();
+    const msgs = Store.getMessages();
+    const projects = news.filter(n => n.type === 'project').length;
+    const newsOnly = news.filter(n => n.type === 'news').length;
+
+    animateCount('stat-menu', menus.length);
+    animateCount('stat-news', newsOnly);
+    animateCount('stat-projects', projects);
+    animateCount('stat-messages', msgs.length);
+
+    updateMsgBadge();
+
+    const tbody = document.getElementById('dash-recent');
+    const recent = [...news].slice(-5).reverse();
+    if (recent.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:32px;font-family:var(--mono);font-size:13px">Мэдээ байхгүй</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = recent.map(n => `
+      <tr>
+        <td style="font-weight:600">${n.title}</td>
+        <td><span class="badge ${n.type === 'news' ? 'badge-news' : 'badge-project'}">${n.type === 'news' ? 'Мэдээ' : 'Төсөл'}</span></td>
+        <td style="color:var(--muted);font-family:var(--mono);font-size:12px">${n.date || '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  function animateCount(id, target) {
+    const el = document.getElementById(id);
+    let start = 0;
+    const step = Math.ceil(target / 20);
+    const interval = setInterval(() => {
+      start = Math.min(start + step, target);
+      el.textContent = start;
+      if (start >= target) clearInterval(interval);
+    }, 40);
+  }
+
+  function updateMsgBadge() {
+    const unread = Store.getMessages().filter(m => !m.read).length;
+    const badge = document.getElementById('msg-badge');
+    if (unread > 0) {
+      badge.style.display = 'inline-flex';
+      badge.className = 'badge-unread';
+      badge.textContent = unread;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // ── MENU CRUD ──
+  function renderMenuTable() {
+    const menus = Store.getMenus();
+    const sorted = [...menus].sort((a, b) => a.order - b.order);
+    document.getElementById('menu-count').textContent = sorted.length + ' цэс';
+    const tbody = document.getElementById('menu-tbody');
+    if (sorted.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="icon">☰</div>Цэс байхгүй байна</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = sorted.map(m => `
+      <tr>
+        <td style="font-weight:600">${m.name}</td>
+        <td><code style="font-family:var(--mono);font-size:12px;color:var(--accent-soft);background:rgba(255,90,180,0.08);padding:3px 8px;border-radius:4px">${m.url}</code></td>
+        <td style="font-family:var(--mono);font-size:13px;color:var(--muted)">${m.order}</td>
+        <td>
+          <div class="td-actions">
+            <button class="btn btn-outline btn-sm" onclick="editMenu(${m.id})">✏ Засах</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteItem('menu', ${m.id}, '${m.name.replace(/'/g,"\\'")}')">✕</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function openMenuModal(edit = false) {
+    document.getElementById('menu-modal-title').textContent = edit ? 'Цэс засах' : 'Цэс нэмэх';
+    if (!edit) {
+      document.getElementById('menu-edit-id').value = '';
+      document.getElementById('menu-name').value = '';
+      document.getElementById('menu-url').value = '';
+      document.getElementById('menu-order').value = Store.getMenus().length + 1;
+    }
+    document.getElementById('menu-modal').classList.add('open');
+    setTimeout(() => document.getElementById('menu-name').focus(), 100);
+  }
+  function closeMenuModal() { document.getElementById('menu-modal').classList.remove('open'); }
+
+  function editMenu(id) {
+    const m = Store.getMenus().find(x => x.id === id);
+    document.getElementById('menu-edit-id').value = m.id;
+    document.getElementById('menu-name').value = m.name;
+    document.getElementById('menu-url').value = m.url;
+    document.getElementById('menu-order').value = m.order;
+    openMenuModal(true);
+  }
+
+  function saveMenu() {
+    const id = document.getElementById('menu-edit-id').value;
+    const name = document.getElementById('menu-name').value.trim();
+    const url = document.getElementById('menu-url').value.trim();
+    const order = parseInt(document.getElementById('menu-order').value) || 1;
+    if (!name) { showToast('⚠ Цэсний нэрийг бөглөнө үү!'); return; }
+    if (!url) { showToast('⚠ Холбоосыг бөглөнө үү!'); return; }
+    let menus = Store.getMenus();
+    if (id) {
+      const i = menus.findIndex(x => x.id === parseInt(id));
+      menus[i] = { ...menus[i], name, url, order };
+      showToast('🌸 Цэс амжилттай засагдлаа');
+    } else {
+      menus.push({ id: Store.getNextMenuId(), name, url, order });
+      showToast('✨ Цэс амжилттай нэмэгдлээ');
+    }
+    Store.saveMenus(menus);
+    closeMenuModal();
+    renderMenuTable();
+    renderDashboard();
+  }
+
+  // ── NEWS / PROJECT CRUD ──
+  function toggleTagsField() {
+    const type = document.getElementById('news-type').value;
+    const isProject = type === 'project';
+    document.getElementById('tags-field').style.display = isProject ? 'block' : 'none';
+    const repoField = document.getElementById('repo-field');
+    const liveField = document.getElementById('live-field');
+    if (repoField) repoField.style.display = isProject ? 'block' : 'none';
+    if (liveField) liveField.style.display = isProject ? 'block' : 'none';
+  }
+
+  function renderNewsTable() {
+    const news = Store.getNews();
+    document.getElementById('news-count').textContent = news.length + ' нийтлэл';
+    const tbody = document.getElementById('news-tbody');
+    if (news.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">📰</div>Мэдээ байхгүй байна</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = [...news].reverse().map(n => `
+      <tr>
+        <td style="font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.title}</td>
+        <td><span class="badge ${n.type === 'news' ? 'badge-news' : 'badge-project'}">${n.type === 'news' ? 'Мэдээ' : 'Төсөл'}</span></td>
+        <td style="color:var(--muted);font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.content}</td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap">${n.date || '—'}</td>
+        <td>
+          <div class="td-actions">
+            <button class="btn btn-outline btn-sm" onclick="editNews(${n.id})">✏ Засах</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteItem('news', ${n.id}, '${n.title.replace(/'/g,"\\'")}')">✕</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function openNewsModal(edit = false) {
+    document.getElementById('news-modal-title').textContent = edit ? 'Мэдээ засах' : 'Мэдээ нэмэх';
+    if (!edit) {
+      document.getElementById('news-edit-id').value = '';
+      document.getElementById('news-title').value = '';
+      document.getElementById('news-type').value = 'news';
+      document.getElementById('news-content').value = '';
+      document.getElementById('news-tags').value = '';
+    }
+    toggleTagsField();
+    document.getElementById('news-modal').classList.add('open');
+    setTimeout(() => document.getElementById('news-title').focus(), 100);
+  }
+  function closeNewsModal() { document.getElementById('news-modal').classList.remove('open'); }
+
+  function editNews(id) {
+    const n = Store.getNews().find(x => x.id === id);
+    document.getElementById('news-edit-id').value = n.id;
+    document.getElementById('news-title').value = n.title;
+    document.getElementById('news-type').value = n.type;
+    document.getElementById('news-content').value = n.content;
+    document.getElementById('news-tags').value = (n.tags || []).join(', ');
+    document.getElementById('news-repo').value = n.repo || '';
+    document.getElementById('news-live').value = n.live || '';
+    openNewsModal(true);
+  }
+
+  function saveNews() {
+    const id = document.getElementById('news-edit-id').value;
+    const title = document.getElementById('news-title').value.trim();
+    const type = document.getElementById('news-type').value;
+    const content = document.getElementById('news-content').value.trim();
+    const repo = document.getElementById('news-repo').value.trim();
+    const live = document.getElementById('news-live').value.trim();
+    const tagsRaw = document.getElementById('news-tags').value.trim();
+    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+    if (!title) { showToast('⚠ Гарчигийг бөглөнө үү!'); return; }
+    if (!content) { showToast('⚠ Агуулгыг бөглөнө үү!'); return; }
+    const today = new Date().toISOString().split('T')[0];
+    let news = Store.getNews();
+    if (id) {
+      const i = news.findIndex(x => x.id === parseInt(id));
+      news[i] = { ...news[i], title, type, content, tags, repo, live };
+      showToast('🌸 Амжилттай засагдлаа');
+    } else {
+      news.push({ id: Store.getNextNewsId(), title, type, content, tags, repo, live, date: today });
+      showToast('✨ Амжилттай нэмэгдлээ' + (type === 'project' ? ' — нүүр хуудсанд харагдана!' : ''));
+    }
+    Store.saveNews(news);
+    closeNewsModal();
+    renderNewsTable();
+    renderDashboard();
+  }
+
+  // ── MESSAGES ──
+  function renderMessages() {
+    const msgs = Store.getMessages();
+    const list = document.getElementById('messages-list');
+    if (msgs.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="icon">✉️</div>Одоогоор мессеж ирээгүй байна</div>`;
+      return;
+    }
+    list.innerHTML = [...msgs].reverse().map(m => {
+      const date = new Date(m.date);
+      const dateStr = date.toLocaleDateString('mn-MN') + ' ' + date.toLocaleTimeString('mn-MN', { hour:'2-digit', minute:'2-digit' });
+      return `
+        <div class="msg-card ${m.read ? '' : 'unread'}" id="msg-${m.id}">
+          <div class="msg-header">
+            <div>
+              <div class="msg-sender" style="display:flex;align-items:center;gap:8px">
+                ${!m.read ? '<span class="unread-dot"></span>' : ''}
+                ${m.name}
+              </div>
+              <div class="msg-email">${m.email}</div>
+            </div>
+            <div class="msg-date">${dateStr}</div>
+          </div>
+          <div class="msg-body">${m.message}</div>
+          <div class="msg-actions">
+            ${!m.read ? `<button class="btn btn-outline btn-sm" onclick="readMsg(${m.id})">✓ Уншсан</button>` : `<span style="font-size:12px;font-family:var(--mono);color:var(--muted)">✓ Уншсан</span>`}
+            <button class="btn btn-danger btn-sm" onclick="deleteMsg(${m.id})">✕ Устгах</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function readMsg(id) {
+    Store.markRead(id);
+    renderMessages();
+    updateMsgBadge();
+  }
+
+  function markAllRead() {
+    const msgs = Store.getMessages().map(m => ({ ...m, read: true }));
+    Store.saveMessages(msgs);
+    renderMessages();
+    updateMsgBadge();
+    showToast('✓ Бүгдийг уншсан гэж тэмдэглэлээ');
+  }
+
+  function deleteMsg(id) {
+    Store.deleteMessage(id);
+    renderMessages();
+    updateMsgBadge();
+    renderDashboard();
+    showToast('✓ Мессеж устгагдлаа');
+  }
+
+  // ── PROFILE ──
+  function loadProfileForm() {
+    const p = Store.getProfile();
+    document.getElementById('prof-name').value = p.name;
+    document.getElementById('prof-title').value = p.title;
+    document.getElementById('prof-bio').value = p.bio;
+    document.getElementById('prof-email').value = p.email;
+    document.getElementById('prof-github').value = p.github;
+    document.getElementById('prof-badge').value = p.badge || '';
+    updateProfilePreview();
+
+    // Live preview on input
+    ['prof-name','prof-title','prof-bio','prof-email','prof-github','prof-badge'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateProfilePreview);
+    });
+
+    // Photo input handler
+    const photoInput = document.getElementById('prof-photo-input');
+    if (photoInput) photoInput.addEventListener('change', e => handleProfilePhoto(e.target));
+  }
+
+  function updateProfilePreview() {
+    const name = document.getElementById('prof-name').value || 'Нэр';
+    const title = document.getElementById('prof-title').value || 'Мэргэжил';
+    const bio = document.getElementById('prof-bio').value || '...';
+    const email = document.getElementById('prof-email').value || '';
+    const github = document.getElementById('prof-github').value || '#';
+    const pStore = Store.getProfile() || {};
+    const photo = pStore.photo;
+
+    const avatarEl = document.getElementById('prev-avatar');
+    if (photo) {
+      avatarEl.innerHTML = `<img src="${photo}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover"/>`;
+      avatarEl.style.background = 'none';
+      avatarEl.style.boxShadow = 'none';
+    } else {
+      avatarEl.textContent = name.charAt(0).toUpperCase();
+      avatarEl.style.background = '';
+      avatarEl.style.boxShadow = '';
+    }
+
+    document.getElementById('prev-name').textContent = name;
+    document.getElementById('prev-title').textContent = title;
+    document.getElementById('prev-bio').textContent = bio;
+    document.getElementById('prev-email-link').href = email ? 'mailto:' + email : '#';
+    document.getElementById('prev-github-link').href = github || '#';
+  }
+
+  function setProfileFromLocal(filename) {
+    const existing = Store.getProfile() || {};
+    const profile = { ...existing, photo: filename };
+    Store.saveProfile(profile);
+    updateProfilePreview();
+    const sb = document.getElementById('sidebar-avatar');
+    if (sb) sb.innerHTML = `<img src="${filename}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+    try { showToast('🌸 Зураг "' + filename + '" тохируулагдлаа'); } catch(e) {}
+  }
+
+  function handleProfilePhoto(input){
+    const file = input && input.files && input.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const data = e.target.result;
+      const existing = Store.getProfile() || {};
+      const profile = { ...existing, photo: data };
+      Store.saveProfile(profile);
+      updateProfilePreview();
+      const sb = document.getElementById('sidebar-avatar');
+      if(sb) sb.innerHTML = `<img src="${data}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+      try{ showToast('🌸 Зураг хадгалагдлаа'); }catch(e){}
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function saveProfile() {
+    const existing = Store.getProfile() || {};
+    const p = {
+      ...existing,
+      name: document.getElementById('prof-name').value.trim(),
+      title: document.getElementById('prof-title').value.trim(),
+      bio: document.getElementById('prof-bio').value.trim(),
+      email: document.getElementById('prof-email').value.trim(),
+      github: document.getElementById('prof-github').value.trim(),
+      badge: document.getElementById('prof-badge').value.trim(),
+    };
+    if (!p.name) { showToast('⚠ Нэрийг бөглөнө үү!'); return; }
+    Store.saveProfile(p);
+    // Update sidebar
+    document.getElementById('sidebar-name').textContent = p.name;
+    const sb = document.getElementById('sidebar-avatar');
+    if (p.photo) {
+      sb.innerHTML = `<img src="${p.photo}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+    } else {
+      sb.textContent = p.name.charAt(0).toUpperCase();
+    }
+    document.getElementById('dash-greeting').textContent = '🌸 Сайн уу, ' + p.name + '!';
+    showToast('🌸 Профайл амжилттай хадгалагдлаа!');
+  }
+
+  // ── DELETE ──
+  let _deleteTarget = null, _deleteType = null;
+
+  function deleteItem(type, id, name) {
+    _deleteTarget = id; _deleteType = type;
+    document.getElementById('delete-msg').textContent = `"${name}" — устгахдаа итгэлтэй байна уу?`;
+    document.getElementById('delete-modal').classList.add('open');
+  }
+  function closeDeleteModal() { document.getElementById('delete-modal').classList.remove('open'); }
+
+  function confirmDelete() {
+    if (_deleteType === 'menu') {
+      Store.saveMenus(Store.getMenus().filter(m => m.id !== _deleteTarget));
+      showToast('✓ Цэс устгагдлаа');
+      renderMenuTable();
+    } else {
+      Store.saveNews(Store.getNews().filter(n => n.id !== _deleteTarget));
+      showToast('✓ Нийтлэл устгагдлаа');
+      renderNewsTable();
+    }
+    closeDeleteModal();
+    renderDashboard();
+  }
+
+  // ── CLOSE ON OVERLAY CLICK & ESC ──
+  ['menu-modal','news-modal','delete-modal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      ['menu-modal','news-modal','delete-modal'].forEach(id => {
+        document.getElementById(id).classList.remove('open');
+      });
+    }
+  });
+
+  // ── INIT ──
+  renderDashboard();
+</script>
+</body>
+</html>

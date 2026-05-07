@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Нэвтрэх — CMS Admin</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root{
+    --accent:#e2c97e;
+    --accent2:#c8b06a;
+    --bg:#0d0d0f;
+    --bg2:#111114;
+    --surface:#161619;
+    --surface2:#1c1c20;
+    --text:#f0eeea;
+    --muted:#5a5a65;
+    --muted2:#3a3a42;
+    --border:rgba(255,255,255,0.06);
+    --font:'Segoe UI',system-ui,sans-serif;
+    --mono:'Courier New',monospace;
+  }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; background: var(--bg); overflow: hidden;
+  }
+
+  /* Animated gradient orbs */
+  .orb {
+    position: fixed; border-radius: 50%; filter: blur(90px);
+    pointer-events: none; animation: drift 12s ease-in-out infinite alternate;
+  }
+  .orb-1 {
+    width: 400px; height: 400px; top: -100px; left: -100px;
+    background: radial-gradient(circle, rgba(255,90,180,0.25), transparent 70%);
+    animation-duration: 14s;
+  }
+  .orb-2 {
+    width: 350px; height: 350px; bottom: -80px; right: -80px;
+    background: radial-gradient(circle, rgba(201,78,255,0.2), transparent 70%);
+    animation-duration: 18s; animation-delay: -4s;
+  }
+  .orb-3 {
+    width: 250px; height: 250px; top: 50%; left: 60%;
+    background: radial-gradient(circle, rgba(255,141,212,0.12), transparent 70%);
+    animation-duration: 10s; animation-delay: -7s;
+  }
+  @keyframes drift {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, 20px) scale(1.08); }
+    100% { transform: translate(-20px, 40px) scale(.95); }
+  }
+
+  /* Grid lines */
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,90,180,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,90,180,0.04) 1px, transparent 1px);
+    background-size: 52px 52px;
+    pointer-events: none;
+  }
+
+  .login-box {
+    position: relative; width: 400px;
+    background: rgba(22,13,31,0.9);
+    border: 1px solid rgba(255,90,180,0.2);
+    border-radius: 20px; padding: 44px;
+    box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 60px rgba(255,90,180,0.08);
+    backdrop-filter: blur(20px);
+    animation: popIn .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(.9) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* Top glow bar */
+  .login-box::before {
+    content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+  }
+
+  .login-logo {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    margin-bottom: 32px; display: flex; align-items: center; gap: 10px;
+  }
+  .login-logo-dot {
+    width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
+    animation: pulseDot 1.6s infinite;
+  }
+  @keyframes pulseDot {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,90,180,.6); }
+    50% { box-shadow: 0 0 0 6px rgba(255,90,180,0); }
+  }
+
+  .login-title {
+    font-family: var(--display); font-size: 28px; font-weight: 700; margin-bottom: 6px;
+    background: linear-gradient(135deg, #fff, var(--accent-soft));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 30px; }
+
+  .login-error {
+    background: rgba(255,68,102,.1); border: 1px solid rgba(255,68,102,.3);
+    border-radius: 8px; padding: 11px 16px; font-size: 13px;
+    color: var(--danger); margin-bottom: 18px; display: none;
+    animation: shake .3s ease;
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    60% { transform: translateX(8px); }
+  }
+
+  .login-hint {
+    margin-top: 20px; font-size: 12px; color: var(--muted);
+    text-align: center; line-height: 2; font-family: var(--mono);
+  }
+  .login-hint code { color: var(--accent); background: rgba(255,90,180,0.1); padding: 2px 8px; border-radius: 4px; }
+
+  .back-link {
+    display: block; margin-top: 16px; text-align: center;
+    font-size: 12px; color: var(--muted); text-decoration: none;
+    transition: color .15s; font-family: var(--mono);
+  }
+  .back-link:hover { color: var(--accent); }
+
+  .divider { height: 1px; background: var(--border); margin: 24px 0; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="login-box">
+  <div class="login-logo">
+    <div class="login-logo-dot"></div>
+    CMS Admin Panel
+  </div>
+  <div class="login-title">Нэвтрэх</div>
+  <p class="login-sub">Admin эрхээр нэвтрэн орно уу</p>
+
+  <div class="login-error" id="login-error">⚠ Нэвтрэх нэр эсвэл нууц үг буруу байна!</div>
+
+  <div class="form-group">
+    <label>Нэвтрэх нэр</label>
+    <input type="text" id="login-user" placeholder="admin" autocomplete="username" />
+  </div>
+  <div class="form-group">
+    <label>Нууц үг</label>
+    <input type="password" id="login-pass" placeholder="••••••" autocomplete="current-password" />
+  </div>
+
+  <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px" onclick="doLogin()">
+    Нэвтрэх →
+  </button>
+
+  <div class="divider"></div>
+
+  <p class="login-hint">
+    Нэвтрэх нэр: <code>admin</code><br>
+    Нууц үг: <code>admin123</code>
+  </p>
+  <a href="index.html" class="back-link">← Нүүр хуудас руу буцах</a>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="shared.js"></script>
+<script>
+  if (Store.isLoggedIn()) window.location.href = 'admin.html';
+
+  document.getElementById('login-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  function doLogin() {
+    const u = document.getElementById('login-user').value.trim();
+    const p = document.getElementById('login-pass').value;
+    const err = document.getElementById('login-error');
+
+    if (u === 'admin' && p === 'admin123') {
+      err.style.display = 'none';
+      Store.login();
+      showToast('🌸 Амжилттай нэвтэрлээ!');
+      setTimeout(() => { window.location.href = 'admin.html'; }, 700);
+    } else {
+      err.style.display = 'block';
+      void err.offsetWidth; // restart animation
+      err.style.animation = 'none';
+      requestAnimationFrame(() => { err.style.animation = ''; });
+      document.getElementById('login-pass').value = '';
+      document.getElementById('login-pass').focus();
+    }
+  }
+</script>
+</body>
+</html>
