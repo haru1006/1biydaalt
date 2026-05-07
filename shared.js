@@ -8,8 +8,7 @@ const DEFAULT_MENUS = [
 
 const DEFAULT_NEWS = [
   { id: 1, title: 'Манай шинэ вэбсайт нээлт', type: 'news', content: 'Манай байгууллагын шинэчлэгдсэн вэбсайт амжилттай нээгдлээ.', date: '2025-04-01' },
-  { id: 2, title: 'GitHub Pages дотор байршуулах', type: 'project', content: 'Front-end статик сайтаа GitHub Pages-д байршуулах төсөл.', date: '2025-04-10', tags: ['GitHub', 'HTML', 'CSS'] },
-  { id: 3, title: 'Сайтын портфолио (Жишээ төсөл)', type: 'project', content: 'Хурдан, хөнгөн нэг хуудсын портфолио төсөл (React/Vanilla).', date: '2025-05-01', tags: ['React', 'JavaScript', 'UI'], repo: 'https://github.com/haru1006/sample-portfolio', live: 'https://lab10-iota.vercel.app/' },
+  { id: 3, title: 'GitHub', type: 'project', content: 'Front-end статик сайтаа GitHub Pages-д байршуулах', date: '2025-05-01', tags: ['React', 'JavaScript', 'UI'], repo: 'https://github.com/haru1006/sample-portfolio', live: 'https://lab10-iota.vercel.app/' },
 ];
 
 const DEFAULT_PROFILE = {
