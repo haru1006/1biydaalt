@@ -710,8 +710,7 @@
       news[i] = { ...news[i], title, type, content, tags, repo, live };
       showToast('🌸 Амжилттай засагдлаа');
     } else {
-      const adminName = (Store.getProfile() && Store.getProfile().name) ? Store.getProfile().name : 'Admin';
-      news.push({ id: Store.getNextNewsId(), title, type, content, tags, repo, live, date: today, createdBy: adminName });
+      news.push({ id: Store.getNextNewsId(), title, type, content, tags, repo, live, date: today });
       showToast('✨ Амжилттай нэмэгдлээ' + (type === 'project' ? ' — нүүр хуудсанд харагдана!' : ''));
     }
     Store.saveNews(news);
