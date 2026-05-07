@@ -443,7 +443,6 @@
       <label>Live холболт</label>
       <div style="display:flex;gap:8px;align-items:center;">
         <input type="text" id="news-live" placeholder="https://lab10-iota.vercel.app/" style="flex:1" />
-        <button type="button" class="btn btn-outline btn-sm" onclick="setNewsLiveLab()">Шууд холбох</button>
       </div>
     </div>
     <div class="modal-actions">
@@ -711,7 +710,8 @@
       news[i] = { ...news[i], title, type, content, tags, repo, live };
       showToast('🌸 Амжилттай засагдлаа');
     } else {
-      news.push({ id: Store.getNextNewsId(), title, type, content, tags, repo, live, date: today });
+      const adminName = (Store.getProfile() && Store.getProfile().name) ? Store.getProfile().name : 'Admin';
+      news.push({ id: Store.getNextNewsId(), title, type, content, tags, repo, live, date: today, createdBy: adminName });
       showToast('✨ Амжилттай нэмэгдлээ' + (type === 'project' ? ' — нүүр хуудсанд харагдана!' : ''));
     }
     Store.saveNews(news);
