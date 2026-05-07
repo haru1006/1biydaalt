@@ -376,7 +376,9 @@
           <div class="form-group"><label>И-мэйл</label><input type="email" id="prof-email" placeholder="example@mail.com" /></div>
           <div class="form-group"><label>GitHub холбоос</label><input type="text" id="prof-github" placeholder="https://github.com/username" /></div>
           <div class="form-group"><label>Badge текст</label><input type="text" id="prof-badge" placeholder="Миний портфолио — 2025" /></div>
-          <div class="form-group"><label>Профайл зураг</label><input type="file" id="prof-photo-input" accept="image/*" /></div>
+          <div class="form-group"><label>Профайл зураг</label>
+            <div style="font-size:13px;color:var(--muted)">Зураг хуулах үйлдлийг хаасан. Доорх товчоор локал 'jojo.jpg' ашиглана.</div>
+          </div>
           <div class="form-group" style="margin-top:8px">
             <button type="button" class="btn btn-outline btn-sm" onclick="setProfileFromLocal('jojo.jpg')">jojo.jpg-г ашиглах</button>
           </div>
@@ -433,11 +435,11 @@
       <label>Тэгүүд (таслалаар тусгаарлана)</label>
       <input type="text" id="news-tags" placeholder="JavaScript, HTML, CSS" />
     </div>
-    <div class="form-group" id="repo-field" style="display:none">
+    <div class="form-group" id="repo-field" >
       <label>GitHub холболт</label>
       <input type="text" id="news-repo" placeholder="https://github.com/haru1006" />
     </div>
-    <div class="form-group" id="live-field" style="display:none">
+    <div class="form-group" id="live-field" >
       <label>Live холболт</label>
       <div style="display:flex;gap:8px;align-items:center;">
         <input type="text" id="news-live" placeholder="https://lab10-iota.vercel.app/" style="flex:1" />
@@ -775,7 +777,12 @@
 
   // ── PROFILE ──
   function loadProfileForm() {
-    const p = Store.getProfile();
+    const p = Store.getProfile() || {};
+    // If profile has no photo stored, default to local jojo.jpg (no upload required)
+    if (!p.photo) {
+      p.photo = 'jojo.jpg';
+      try { Store.saveProfile(p); } catch (e) {}
+    }
     document.getElementById('prof-name').value = p.name;
     document.getElementById('prof-title').value = p.title;
     document.getElementById('prof-bio').value = p.bio;

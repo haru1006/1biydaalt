@@ -382,9 +382,8 @@ footer{
       <div class="photo-frame">
         <div class="photo-ring"></div>
         <div class="photo-placeholder" id="photo-placeholder">
-          <input type="file" accept="image/*" onchange="loadPhoto(this)"/>
           <div class="photo-icon-txt">📷</div>
-          <span>зураг оруулах</span>
+          <span>Локал зураг: jojo.jpg ашиглана</span>
         </div>
         <img class="photo-preview" id="photo-preview" alt="Profile"/>
       </div>
@@ -587,16 +586,7 @@ function filterCards(btn,cat){
 }
 
 // Photo
-function loadPhoto(input){
-  const file=input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const prev=document.getElementById('photo-preview');
-    const ph=document.getElementById('photo-placeholder');
-    prev.src=e.target.result;prev.style.display='block';ph.style.display='none';
-  };
-  reader.readAsDataURL(file);
-}
+// Photo uploads disabled — use local jojo.jpg via Store.default/profile
 
 // Submit
 function handleSubmit(btn){

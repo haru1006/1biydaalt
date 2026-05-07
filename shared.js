@@ -18,6 +18,7 @@ const DEFAULT_PROFILE = {
   email: 'hulaajaa@gmail.com',
   github: 'https://github.com/haru1006',
   badge: 'Миний портфолио — 2026',
+  photo: 'jojo.jpg',
 };
 
 const Store = {
