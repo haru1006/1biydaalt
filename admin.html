@@ -439,7 +439,10 @@
     </div>
     <div class="form-group" id="live-field" style="display:none">
       <label>Live холболт</label>
-      <input type="text" id="news-live" placeholder="lab10-iota.vercel.app" />
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="news-live" placeholder="https://lab10-iota.vercel.app/" style="flex:1" />
+        <button type="button" class="btn btn-outline btn-sm" onclick="setNewsLiveLab()">Шууд холбох</button>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeNewsModal()">Болих</button>
@@ -482,7 +485,7 @@
       sb.textContent = (p.name || 'A').charAt(0).toUpperCase();
       sb.style.background = '';
     }
-    document.getElementById('dash-greeting').textContent = '🌸 Сайн уу, ' + (p.name || 'Admin') + '!';
+    document.getElementById('dash-greeting').textContent = ' Сайн уу, ' + (p.name || 'Admin') + '!';
   })();
 
   function doLogout() {
@@ -826,6 +829,13 @@
     const sb = document.getElementById('sidebar-avatar');
     if (sb) sb.innerHTML = `<img src="${filename}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
     try { showToast('🌸 Зураг "' + filename + '" тохируулагдлаа'); } catch(e) {}
+  }
+
+  function setNewsLiveLab() {
+    const el = document.getElementById('news-live');
+    if (!el) return;
+    el.value = 'https://lab10-iota.vercel.app/';
+    try { showToast('🔗 Live холбоосыг тохирууллаа'); } catch(e) {}
   }
 
   function handleProfilePhoto(input){
