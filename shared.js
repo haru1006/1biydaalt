@@ -12,7 +12,7 @@ const DEFAULT_NEWS = [
 ];
 
 const DEFAULT_PROFILE = {
-  name: 'Haru',
+  name: 'Хархул',
   title: 'Front-end хөгжүүлэгч',
   bio: 'Би веб хөгжүүлэлт болон UI/UX дизайн сонирхдог. Орчин үеийн, хэрэглэгчдэд ээлтэй веб сайт бүтээх дуртай..',
   email: 'hulaajaa@gmail.com',
